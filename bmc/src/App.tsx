@@ -106,7 +106,6 @@ function App() {
                 <tr>
                   <th>Starting Capital</th>
                   <th>Investment / Coin</th>
-                  <th>Coins</th>
                   <th>Ending Capital</th>
                   <th>Total G/L</th>
                   <th>Total G/L %</th>
@@ -117,7 +116,6 @@ function App() {
                 <tr>
                   <td>{currencyFormatter.format(startingCapital)}</td>
                   <td>{currencyFormatter.format(investmentPerCoin)}</td>
-                  <td>{simulatedInvestments.length}</td>
                   <td>{currencyFormatter.format(endingCapital)}</td>
                   <td className={totalGainLossAbsolute >= 0 ? 'pl-positive' : 'pl-negative'}>
                     {currencyFormatter.format(totalGainLossAbsolute)}
