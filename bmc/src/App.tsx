@@ -317,6 +317,7 @@ function App() {
                   const profitLossPercent = getProfitLossPercent(row.buy_price, row.sell_price)
                   const key = `${row.symbol}-${row.bought_at}`
                   const bestSellInfo = bestSellByHolding[key]
+                  const bestPlPercent = bestSellInfo?.bestPlPercent ?? null
 
                   return (
                     <tr key={`${row.symbol}-${row.bought_at}`}>
@@ -340,16 +341,14 @@ function App() {
                       <td>{formatTokenPrice(bestSellInfo?.bestSellPrice ?? null)}</td>
                       <td
                         className={
-                          bestSellInfo?.bestPlPercent === null
+                          bestPlPercent === null
                             ? ''
-                            : bestSellInfo.bestPlPercent >= 0
+                            : bestPlPercent >= 0
                               ? 'pl-positive'
                               : 'pl-negative'
                         }
                       >
-                        {bestSellInfo?.bestPlPercent === null
-                          ? '-'
-                          : `${bestSellInfo.bestPlPercent.toFixed(2)}%`}
+                        {bestPlPercent === null ? '-' : `${bestPlPercent.toFixed(2)}%`}
                       </td>
                     </tr>
                   )
