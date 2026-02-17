@@ -10,113 +10,31 @@ type Holding = {
   mint_address: string
 }
 
-type Candle = {
-  timestamp: number
-  high: number
-}
-
 type BestSellInfo = {
   bestSellAt: string | null
   bestSellPrice: number | null
   bestPlPercent: number | null
 }
 
-const GECKO_BASE_URL = 'https://api.geckoterminal.com/api/v2'
+const fetchBestSellInfoFromApi = async (holding: Holding): Promise<BestSellInfo> => {
+  const query = new URLSearchParams({
+    mintAddress: holding.mint_address,
+    boughtAt: holding.bought_at,
+    buyPrice: String(holding.buy_price),
+  })
 
-const fetchTopSolanaPoolAddress = async (tokenAddress: string) => {
-  const poolsResponse = await fetch(
-    `${GECKO_BASE_URL}/networks/solana/tokens/${tokenAddress}/pools?page=1`,
-  )
+  const response = await fetch(`/api/best-sell?${query.toString()}`)
 
-  if (!poolsResponse.ok) {
-    throw new Error(`Failed to load pools for ${tokenAddress}`)
+  if (!response.ok) {
+    throw new Error(`Best sell API failed for ${holding.mint_address}`)
   }
 
-  const poolsJson = (await poolsResponse.json()) as {
-    data?: Array<{ attributes?: { address?: string } }>
-  }
-
-  const topPoolAddress = poolsJson.data?.[0]?.attributes?.address
-  if (!topPoolAddress) {
-    throw new Error(`No pool found for ${tokenAddress}`)
-  }
-
-  return topPoolAddress
-}
-
-const fetchAllMinuteCandles = async (poolAddress: string) => {
-  const candles: Candle[] = []
-  let beforeTimestamp: number | null = null
-  let pageCount = 0
-  const maxPages = 100
-
-  while (pageCount < maxPages) {
-    const beforeQuery = beforeTimestamp === null ? '' : `&before_timestamp=${beforeTimestamp}`
-    const ohlcvResponse = await fetch(
-      `${GECKO_BASE_URL}/networks/solana/pools/${poolAddress}/ohlcv/minute?aggregate=1&limit=1000${beforeQuery}`,
-    )
-
-    if (!ohlcvResponse.ok) {
-      throw new Error(`Failed to load candles for pool ${poolAddress}`)
-    }
-
-    const ohlcvJson = (await ohlcvResponse.json()) as {
-      data?: {
-        attributes?: {
-          ohlcv_list?: Array<[number, string, string, string, string, string]>
-        }
-      }
-    }
-
-    const ohlcvList = ohlcvJson.data?.attributes?.ohlcv_list ?? []
-    if (ohlcvList.length === 0) break
-
-    const pageCandles = ohlcvList
-      .map((row) => ({
-        timestamp: row[0],
-        high: Number(row[2]),
-      }))
-      .filter((row) => Number.isFinite(row.high) && row.high > 0)
-
-    candles.push(...pageCandles)
-
-    const oldestTimestamp = Math.min(...pageCandles.map((row) => row.timestamp))
-    beforeTimestamp = oldestTimestamp - 60
-
-    pageCount += 1
-    if (ohlcvList.length < 1000) break
-  }
-
-  const uniqueByTimestamp = new Map<number, Candle>()
-  for (const candle of candles) {
-    uniqueByTimestamp.set(candle.timestamp, candle)
-  }
-
-  return Array.from(uniqueByTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp)
-}
-
-const computeBestSellInfo = (holding: Holding, candles: Candle[]): BestSellInfo => {
-  if (holding.buy_price <= 0) {
-    return { bestSellAt: null, bestSellPrice: null, bestPlPercent: null }
-  }
-
-  const boughtAtUnixSeconds = Math.floor(new Date(holding.bought_at).getTime() / 1000)
-  const afterBuyCandles = candles.filter((candle) => candle.timestamp >= boughtAtUnixSeconds)
-
-  if (afterBuyCandles.length === 0) {
-    return { bestSellAt: null, bestSellPrice: null, bestPlPercent: null }
-  }
-
-  const bestCandle = afterBuyCandles.reduce((best, current) =>
-    current.high > best.high ? current : best,
-  )
-
-  const bestPlPercent = ((bestCandle.high - holding.buy_price) / holding.buy_price) * 100
+  const data = (await response.json()) as BestSellInfo
 
   return {
-    bestSellAt: new Date(bestCandle.timestamp * 1000).toLocaleString(),
-    bestSellPrice: bestCandle.high,
-    bestPlPercent,
+    bestSellAt: data.bestSellAt ?? null,
+    bestSellPrice: data.bestSellPrice ?? null,
+    bestPlPercent: data.bestPlPercent ?? null,
   }
 }
 
@@ -191,9 +109,7 @@ function App() {
         const key = `${holding.symbol}-${holding.bought_at}`
 
         try {
-          const poolAddress = await fetchTopSolanaPoolAddress(holding.mint_address)
-          const minuteCandles = await fetchAllMinuteCandles(poolAddress)
-          nextBestSellByHolding[key] = computeBestSellInfo(holding, minuteCandles)
+          nextBestSellByHolding[key] = await fetchBestSellInfoFromApi(holding)
         } catch {
           nextBestSellByHolding[key] = {
             bestSellAt: null,
