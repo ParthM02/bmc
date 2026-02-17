@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { supabase } from './supabaseClient'
 
@@ -17,7 +17,6 @@ type BestSellInfo = {
 }
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
-const bestSellRequestCache = new Map<string, Promise<BestSellInfo>>()
 
 const fetchBestSellInfoFromApi = async (holding: Holding): Promise<BestSellInfo> => {
   const query = new URLSearchParams({
@@ -26,33 +25,18 @@ const fetchBestSellInfoFromApi = async (holding: Holding): Promise<BestSellInfo>
     buyPrice: String(holding.buy_price),
   })
 
-  const requestKey = `${holding.mint_address}|${holding.bought_at}|${holding.buy_price}`
-  const cachedPromise = bestSellRequestCache.get(requestKey)
-  if (cachedPromise) return cachedPromise
+  const response = await fetch(`${API_BASE_URL}/api/best-sell?${query.toString()}`)
 
-  const requestPromise = (async () => {
-    const response = await fetch(`${API_BASE_URL}/api/best-sell?${query.toString()}`)
+  if (!response.ok) {
+    throw new Error(`Best sell API failed for ${holding.mint_address}`)
+  }
 
-    if (!response.ok) {
-      throw new Error(`Best sell API failed for ${holding.mint_address}`)
-    }
+  const data = (await response.json()) as BestSellInfo
 
-    const data = (await response.json()) as BestSellInfo
-
-    return {
-      bestSellAt: data.bestSellAt ?? null,
-      bestSellPrice: data.bestSellPrice ?? null,
-      bestPlPercent: data.bestPlPercent ?? null,
-    }
-  })()
-
-  bestSellRequestCache.set(requestKey, requestPromise)
-
-  try {
-    return await requestPromise
-  } catch (error) {
-    bestSellRequestCache.delete(requestKey)
-    throw error
+  return {
+    bestSellAt: data.bestSellAt ?? null,
+    bestSellPrice: data.bestSellPrice ?? null,
+    bestPlPercent: data.bestPlPercent ?? null,
   }
 }
 
@@ -77,8 +61,6 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [bestSellByHolding, setBestSellByHolding] = useState<Record<string, BestSellInfo>>({})
   const [bestSellLoading, setBestSellLoading] = useState(false)
-  const holdingsLoadedRef = useRef(false)
-  const bestSellFetchedKeysRef = useRef(new Set<string>())
 
   const getProfitLossPercent = (buyPrice: number, sellPrice: number | null) => {
     if (sellPrice === null || buyPrice === 0) return null
@@ -87,9 +69,6 @@ function App() {
 
   useEffect(() => {
     const loadHoldings = async () => {
-      if (holdingsLoadedRef.current) return
-      holdingsLoadedRef.current = true
-
       setLoading(true)
       setError(null)
 
@@ -125,8 +104,6 @@ function App() {
 
   useEffect(() => {
     if (holdings.length === 0) {
-      setBestSellByHolding({})
-      bestSellFetchedKeysRef.current.clear()
       return
     }
 
@@ -139,25 +116,19 @@ function App() {
       for (const holding of holdings) {
         const key = `${holding.symbol}-${holding.bought_at}`
 
-        if (bestSellFetchedKeysRef.current.has(key)) {
-          continue
-        }
-
         try {
           nextBestSellByHolding[key] = await fetchBestSellInfoFromApi(holding)
-          bestSellFetchedKeysRef.current.add(key)
         } catch {
           nextBestSellByHolding[key] = {
             bestSellAt: null,
             bestSellPrice: null,
             bestPlPercent: null,
           }
-          bestSellFetchedKeysRef.current.add(key)
         }
       }
 
       if (!cancelled) {
-        setBestSellByHolding((prev) => ({ ...prev, ...nextBestSellByHolding }))
+        setBestSellByHolding(nextBestSellByHolding)
         setBestSellLoading(false)
       }
     }
