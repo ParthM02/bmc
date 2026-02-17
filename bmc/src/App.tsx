@@ -15,6 +15,11 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const getProfitLossPercent = (buyPrice: number, sellPrice: number | null) => {
+    if (sellPrice === null || buyPrice === 0) return null
+    return ((sellPrice - buyPrice) / buyPrice) * 100
+  }
+
   useEffect(() => {
     const loadHoldings = async () => {
       setLoading(true)
@@ -63,22 +68,38 @@ function App() {
             <thead>
               <tr>
                 <th>Symbol</th>
+                <th>Mint Address</th>
                 <th>Bought At</th>
                 <th>Buy Price</th>
                 <th>Sell Price</th>
-                <th>Mint Address</th>
+                <th>P/L %</th>
               </tr>
             </thead>
             <tbody>
-              {holdings.map((row) => (
-                <tr key={`${row.symbol}-${row.bought_at}`}>
-                  <td>{row.symbol}</td>
-                  <td>{new Date(row.bought_at).toLocaleString()}</td>
-                  <td>{row.buy_price}</td>
-                  <td>{row.sell_price ?? '-'}</td>
-                  <td className="mint-cell">{row.mint_address}</td>
-                </tr>
-              ))}
+              {holdings.map((row) => {
+                const profitLossPercent = getProfitLossPercent(row.buy_price, row.sell_price)
+
+                return (
+                  <tr key={`${row.symbol}-${row.bought_at}`}>
+                    <td>{row.symbol}</td>
+                    <td className="mint-cell">{row.mint_address}</td>
+                    <td>{new Date(row.bought_at).toLocaleString()}</td>
+                    <td>{row.buy_price}</td>
+                    <td>{row.sell_price ?? '-'}</td>
+                    <td
+                      className={
+                        profitLossPercent === null
+                          ? ''
+                          : profitLossPercent >= 0
+                            ? 'pl-positive'
+                            : 'pl-negative'
+                      }
+                    >
+                      {profitLossPercent === null ? '-' : `${profitLossPercent.toFixed(2)}%`}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
