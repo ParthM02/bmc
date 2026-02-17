@@ -58,8 +58,12 @@ function App() {
   const investmentPerCoin = 0.5
   const validInvestments = holdings.filter((holding) => holding.buy_price > 0)
   const startingCapital: number = 5
+  const maxAffordableCoins = Math.floor(startingCapital / investmentPerCoin)
+  const simulatedInvestments = validInvestments.slice(0, maxAffordableCoins)
+  const investedCapital = simulatedInvestments.length * investmentPerCoin
+  const uninvestedCash = startingCapital - investedCapital
 
-  const endingCapital = validInvestments.reduce((total, holding) => {
+  const investmentValue = simulatedInvestments.reduce((total, holding) => {
     if (holding.sell_price === null) {
       return total + investmentPerCoin
     }
@@ -67,11 +71,13 @@ function App() {
     return total + investmentPerCoin * (holding.sell_price / holding.buy_price)
   }, 0)
 
+  const endingCapital = uninvestedCash + investmentValue
+
   const totalGainLossAbsolute = endingCapital - startingCapital
   const totalGainLossPercent =
     startingCapital === 0 ? 0 : (totalGainLossAbsolute / startingCapital) * 100
 
-  const closedInvestments = validInvestments.filter((holding) => holding.sell_price !== null)
+  const closedInvestments = simulatedInvestments.filter((holding) => holding.sell_price !== null)
   const winningInvestments = closedInvestments.filter(
     (holding) => (holding.sell_price as number) > holding.buy_price,
   ).length
@@ -111,7 +117,7 @@ function App() {
                 <tr>
                   <td>{currencyFormatter.format(startingCapital)}</td>
                   <td>{currencyFormatter.format(investmentPerCoin)}</td>
-                  <td>{validInvestments.length}</td>
+                  <td>{simulatedInvestments.length}</td>
                   <td>{currencyFormatter.format(endingCapital)}</td>
                   <td className={totalGainLossAbsolute >= 0 ? 'pl-positive' : 'pl-negative'}>
                     {currencyFormatter.format(totalGainLossAbsolute)}
