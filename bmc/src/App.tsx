@@ -16,6 +16,8 @@ type BestSellInfo = {
   bestPlPercent: number | null
 }
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
+
 const fetchBestSellInfoFromApi = async (holding: Holding): Promise<BestSellInfo> => {
   const query = new URLSearchParams({
     mintAddress: holding.mint_address,
@@ -23,7 +25,7 @@ const fetchBestSellInfoFromApi = async (holding: Holding): Promise<BestSellInfo>
     buyPrice: String(holding.buy_price),
   })
 
-  const response = await fetch(`/api/best-sell?${query.toString()}`)
+  const response = await fetch(`${API_BASE_URL}/api/best-sell?${query.toString()}`)
 
   if (!response.ok) {
     throw new Error(`Best sell API failed for ${holding.mint_address}`)
@@ -44,6 +46,13 @@ const formatTokenPrice = (value: number | null) => {
   if (value >= 1) return value.toFixed(4)
   if (value >= 0.01) return value.toFixed(6)
   return value.toFixed(12).replace(/0+$/, '').replace(/\.$/, '')
+}
+
+const formatDateTime = (value: string | null) => {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleString()
 }
 
 function App() {
@@ -253,7 +262,7 @@ function App() {
                       >
                         {profitLossPercent === null ? '-' : `${profitLossPercent.toFixed(2)}%`}
                       </td>
-                      <td>{bestSellInfo?.bestSellAt ?? '-'}</td>
+                      <td>{formatDateTime(bestSellInfo?.bestSellAt ?? null)}</td>
                       <td>{formatTokenPrice(bestSellInfo?.bestSellPrice ?? null)}</td>
                       <td
                         className={
