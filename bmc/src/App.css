@@ -27,7 +27,8 @@
 }
 
 .table-wrap {
-  width: min(100%, 1200px);
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   border: 1px solid #222;
   border-radius: 10px;
