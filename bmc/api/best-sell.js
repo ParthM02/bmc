@@ -6,16 +6,42 @@ const nullBestSell = {
   bestPlPercent: null,
 }
 
-async function fetchTopSolanaPoolAddress(tokenAddress) {
-  const poolsResponse = await fetch(
-    `${GECKO_BASE_URL}/networks/solana/tokens/${tokenAddress}/pools?page=1`,
-  )
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-  if (!poolsResponse.ok) {
-    throw new Error(`Failed to load pools for ${tokenAddress}`)
+async function fetchJsonWithRetry(url, attempts = 3) {
+  let lastError = null
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: { Accept: 'application/json' },
+      })
+
+      if (response.ok) {
+        return await response.json()
+      }
+
+      const retryable = response.status === 429 || response.status >= 500
+      if (!retryable || attempt === attempts) {
+        throw new Error(`Upstream ${response.status} for ${url}`)
+      }
+
+      await sleep(250 * attempt)
+    } catch (error) {
+      lastError = error
+      if (attempt < attempts) {
+        await sleep(250 * attempt)
+      }
+    }
   }
 
-  const poolsJson = await poolsResponse.json()
+  throw lastError ?? new Error('Unknown upstream error')
+}
+
+async function fetchTopSolanaPoolAddress(tokenAddress) {
+  const poolsJson = await fetchJsonWithRetry(
+    `${GECKO_BASE_URL}/networks/solana/tokens/${tokenAddress}/pools?page=1`,
+  )
   const topPoolAddress = poolsJson?.data?.[0]?.attributes?.address
 
   if (!topPoolAddress) {
@@ -25,7 +51,7 @@ async function fetchTopSolanaPoolAddress(tokenAddress) {
   return topPoolAddress
 }
 
-async function fetchAllMinuteCandles(poolAddress) {
+async function fetchAllMinuteCandles(poolAddress, stopBeforeTimestamp) {
   const candles = []
   let beforeTimestamp = null
   let pageCount = 0
@@ -33,15 +59,9 @@ async function fetchAllMinuteCandles(poolAddress) {
 
   while (pageCount < maxPages) {
     const beforeQuery = beforeTimestamp === null ? '' : `&before_timestamp=${beforeTimestamp}`
-    const ohlcvResponse = await fetch(
+    const ohlcvJson = await fetchJsonWithRetry(
       `${GECKO_BASE_URL}/networks/solana/pools/${poolAddress}/ohlcv/minute?aggregate=1&limit=1000${beforeQuery}`,
     )
-
-    if (!ohlcvResponse.ok) {
-      throw new Error(`Failed to load candles for pool ${poolAddress}`)
-    }
-
-    const ohlcvJson = await ohlcvResponse.json()
     const ohlcvList = ohlcvJson?.data?.attributes?.ohlcv_list ?? []
 
     if (ohlcvList.length === 0) break
@@ -58,6 +78,11 @@ async function fetchAllMinuteCandles(poolAddress) {
     if (pageCandles.length === 0) break
 
     const oldestTimestamp = Math.min(...pageCandles.map((row) => row.timestamp))
+
+    if (Number.isFinite(stopBeforeTimestamp) && oldestTimestamp <= stopBeforeTimestamp) {
+      break
+    }
+
     beforeTimestamp = oldestTimestamp - 60
 
     pageCount += 1
@@ -116,12 +141,17 @@ export default async function handler(req, res) {
   }
 
   try {
+    const boughtAtUnixSeconds = Math.floor(new Date(boughtAt).getTime() / 1000)
     const poolAddress = await fetchTopSolanaPoolAddress(mintAddress)
-    const minuteCandles = await fetchAllMinuteCandles(poolAddress)
+    const minuteCandles = await fetchAllMinuteCandles(poolAddress, boughtAtUnixSeconds)
     const result = computeBestSell({ buyPrice, boughtAt }, minuteCandles)
     res.status(200).json(result)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown API error'
-    res.status(502).json({ error: message })
+    console.error(`best-sell failed for ${mintAddress}:`, message)
+    res.status(200).json({
+      ...nullBestSell,
+      warning: message,
+    })
   }
 }
