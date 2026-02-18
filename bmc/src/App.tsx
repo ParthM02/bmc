@@ -195,6 +195,7 @@ function App() {
 
       {!loading && !error && (
         <>
+          <h2 className="section-title">Performance</h2>
           <div className="table-wrap">
             <table className="holdings-table performance-table">
               <thead>
@@ -232,6 +233,7 @@ function App() {
             </table>
           </div>
 
+          <h2 className="section-title">Trades</h2>
           <div className="table-wrap">
             <table className="holdings-table">
               <thead>

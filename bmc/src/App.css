@@ -16,6 +16,13 @@
   font-weight: 800;
 }
 
+.section-title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
 .status {
   margin: 0;
   color: #ddd;
@@ -72,4 +79,18 @@
 .pl-negative {
   color: #fca5a5;
   font-weight: 600;
+}
+
+.algo-transparency {
+  color: #fff;
+}
+
+.algo-transparency h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.algo-transparency ul {
+  margin: 0;
+  padding-left: 1.25rem;
 }
