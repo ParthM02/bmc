@@ -297,9 +297,9 @@ function App() {
           <section className="algo-transparency">
             <h2>Algo Transparency</h2>
             <ul>
-              <li>Feb 18 - Algo V2.5, no test reset</li>
-              <li>Feb 17 - Algo V2, test reset</li>
-              <li>Feb 16 - Algo V1 released</li>
+              <li>Feb 18 - Algo V2.5 (stricter risk management), no test reset</li>
+              <li>Feb 17 - Algo V2 (maximize potenial profits), test reset</li>
+              <li>Feb 16 - Algo V1 released (test if data is good)</li>
             </ul>
           </section>
         </>
