@@ -291,6 +291,15 @@ function App() {
               </tbody>
             </table>
           </div>
+
+          <section className="algo-transparency">
+            <h2>Algo Transparency</h2>
+            <ul>
+              <li>Feb 18 - Algo V2.5, no test reset</li>
+              <li>Feb 17 - Algo V2, test reset</li>
+              <li>Feb 16 - Algo V1 released</li>
+            </ul>
+          </section>
         </>
       )}
     </main>
