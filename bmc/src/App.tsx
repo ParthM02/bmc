@@ -168,6 +168,13 @@ function App() {
   ).length
   const winRatePercent =
     closedInvestments.length === 0 ? null : (winningInvestments / closedInvestments.length) * 100
+  const averageRoiPercent =
+    closedInvestments.length === 0
+      ? null
+      : closedInvestments.reduce((total, holding) => {
+          const sellPrice = holding.sell_price as number
+          return total + ((sellPrice - holding.buy_price) / holding.buy_price) * 100
+        }, 0) / closedInvestments.length
 
   const currencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -197,6 +204,7 @@ function App() {
                   <th>Ending Capital</th>
                   <th>Total G/L</th>
                   <th>Total G/L %</th>
+                  <th>Average ROI</th>
                   <th>Win Rate</th>
                 </tr>
               </thead>
@@ -210,6 +218,9 @@ function App() {
                   </td>
                   <td className={totalGainLossPercent >= 0 ? 'pl-positive' : 'pl-negative'}>
                     {totalGainLossPercent.toFixed(2)}%
+                  </td>
+                  <td className={averageRoiPercent === null ? '' : averageRoiPercent >= 0 ? 'pl-positive' : 'pl-negative'}>
+                    {averageRoiPercent === null ? '-' : `${averageRoiPercent.toFixed(2)}%`}
                   </td>
                   <td>
                     {winRatePercent === null
