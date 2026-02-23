@@ -14,15 +14,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const url = new URL('https://public-api.birdeye.so/wallet/v2/pnl/details')
-    url.searchParams.append('wallet', walletAddress)
-
-    const response = await fetch(url.toString(), {
+    const response = await fetch('https://public-api.birdeye.so/wallet/v2/pnl/details', {
+      method: 'POST',
       headers: {
-        'X-API-KEY': apiKey,
         'x-chain': 'solana',
-        'accept': 'application/json'
-      }
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'X-API-KEY': apiKey
+      },
+      body: JSON.stringify({
+        duration: 'all',
+        sort_type: 'desc',
+        sort_by: 'last_trade',
+        limit: 100,
+        offset: 0,
+        wallet: walletAddress
+      })
     })
 
     if (!response.ok) {
