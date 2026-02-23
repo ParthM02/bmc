@@ -166,6 +166,46 @@
   font-variant-numeric: tabular-nums;
 }
 
+.legal-disclaimer {
+  width: 100%;
+  border: 1px solid #222;
+  background: #0a0a0a;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #d4d4d8;
+  line-height: 1.5;
+}
+
+.legal-disclaimer h2 {
+  margin: 0 0 0.75rem;
+  color: #fff;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.legal-disclaimer ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.legal-disclaimer li {
+  margin: 0;
+}
+
+.legal-disclaimer h3 {
+  margin: 0 0 0.2rem;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.legal-disclaimer p {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
 .mint-cell {
   max-width: 380px;
   white-space: nowrap;
