@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         duration: 'all',
         sort_type: 'desc',
         sort_by: 'last_trade',
-        limit: 100,
+        limit: 50,
         offset: 0,
         wallet: walletAddress
       })

@@ -46,12 +46,18 @@ function App() {
     const walletObject = isTableRow(walletData) ? walletData : null
     const walletDataData = walletObject?.data
     const walletDataItems = walletObject?.items
+    const walletDataTokens = walletObject?.tokens
     
-    // BirdEye typical response: { data: { items: [...] } } or { data: [...] } or just [...]
+    // BirdEye response can be: { data: { tokens: [...] } }, { data: { items: [...] } }, { data: [...] }, { items: [...] }, or [...]
     if (isTableRowArray(walletData)) {
       items = walletData
     } else if (isTableRowArray(walletDataData)) {
       items = walletDataData
+    } else if (
+      isTableRow(walletDataData) &&
+      isTableRowArray(walletDataData.tokens)
+    ) {
+      items = walletDataData.tokens
     } else if (
       isTableRow(walletDataData) &&
       isTableRowArray(walletDataData.items)
@@ -59,6 +65,8 @@ function App() {
       items = walletDataData.items
     } else if (isTableRowArray(walletDataItems)) {
       items = walletDataItems
+    } else if (isTableRowArray(walletDataTokens)) {
+      items = walletDataTokens
     } else {
        // If no array found, just dump JSON
        return (
