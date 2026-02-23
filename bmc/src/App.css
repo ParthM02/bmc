@@ -73,6 +73,36 @@
   color: #ff7b7b;
 }
 
+.summary-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.summary-card {
+  border: 1px solid #222;
+  background: #0b0b0b;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.summary-label {
+  color: #a1a1aa;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-value {
+  color: #fff;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
 .table-wrap {
   width: 100%;
   max-width: 100%;
@@ -85,7 +115,8 @@
   width: 100%;
   border-collapse: collapse;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  min-width: 1100px;
 }
 
 .holdings-table th,
@@ -98,10 +129,41 @@
 .holdings-table th {
   background: #111;
   font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .holdings-table tbody tr:hover {
   background: #0d0d0d;
+}
+
+.readable-table td,
+.readable-table th {
+  vertical-align: middle;
+}
+
+.token-cell {
+  min-width: 220px;
+}
+
+.token-symbol {
+  display: block;
+  font-weight: 700;
+  color: #fff;
+}
+
+.token-address {
+  display: block;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.num {
+  text-align: right !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .mint-cell {

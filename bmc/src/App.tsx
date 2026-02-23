@@ -11,6 +11,50 @@ const isTableRow = (value: unknown): value is TableRow =>
 const isTableRowArray = (value: unknown): value is TableRow[] =>
   Array.isArray(value) && value.every(isTableRow)
 
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
+}
+
+const formatCompactNumber = (value: unknown, maxFractionDigits = 2): string => {
+  const num = toNumber(value)
+  if (num === null) return '—'
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: maxFractionDigits }).format(num)
+}
+
+const formatUsd = (value: unknown): string => {
+  const num = toNumber(value)
+  if (num === null) return '—'
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num)
+}
+
+const formatPercent = (value: unknown): string => {
+  const num = toNumber(value)
+  if (num === null) return '—'
+  return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(num)}%`
+}
+
+const formatTokenPrice = (value: unknown): string => {
+  const num = toNumber(value)
+  if (num === null) return '—'
+  if (Math.abs(num) < 0.0001 && num !== 0) return num.toExponential(2)
+  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 8 }).format(num)
+}
+
+const shortenAddress = (value: unknown): string => {
+  if (typeof value !== 'string' || value.length <= 14) return typeof value === 'string' ? value : '—'
+  return `${value.slice(0, 6)}...${value.slice(-6)}`
+}
+
 function App() {
   const [walletData, setWalletData] = useState<unknown>(null)
   const [loading, setLoading] = useState(true)
@@ -81,37 +125,93 @@ function App() {
        return <p>No items found.</p>
     }
 
-    // Get headers from first item keys
-    const headers = Object.keys(items[0] || {})
+    const walletDataObject = isTableRow(walletDataData) ? walletDataData : null
+    const summary = walletDataObject && isTableRow(walletDataObject.summary) ? walletDataObject.summary : null
+    const summaryCounts = summary && isTableRow(summary.counts) ? summary.counts : null
+    const summaryPnl = summary && isTableRow(summary.pnl) ? summary.pnl : null
+    const summaryCashflow = summary && isTableRow(summary.cashflow_usd) ? summary.cashflow_usd : null
 
     return (
-      <div className="table-wrap">
-        <table className="holdings-table">
-          <thead>
-            <tr>
-              {headers.map((header) => (
-                <th key={header}>{header}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item, index) => (
-              <tr key={index}>
-                {headers.map((header) => {
-                  const val = item[header]
-                  return (
-                    <td key={`${index}-${header}`}>
-                      {typeof val === 'object' && val !== null
-                        ? JSON.stringify(val)
-                        : String(val)}
-                    </td>
-                  )
-                })}
+      <>
+        {summary && (
+          <section className="summary-grid" aria-label="Wallet summary">
+            <article className="summary-card">
+              <span className="summary-label">Unique Tokens</span>
+              <strong className="summary-value">{formatCompactNumber(summary.unique_tokens, 0)}</strong>
+            </article>
+            <article className="summary-card">
+              <span className="summary-label">Win Rate</span>
+              <strong className="summary-value">{formatPercent(toNumber(summaryCounts?.win_rate) !== null ? Number(summaryCounts?.win_rate) * 100 : null)}</strong>
+            </article>
+            <article className="summary-card">
+              <span className="summary-label">Realized PnL</span>
+              <strong className={`summary-value ${toNumber(summaryPnl?.realized_profit_usd) !== null && Number(summaryPnl?.realized_profit_usd) >= 0 ? 'pl-positive' : 'pl-negative'}`}>
+                {formatUsd(summaryPnl?.realized_profit_usd)}
+              </strong>
+            </article>
+            <article className="summary-card">
+              <span className="summary-label">Current Value</span>
+              <strong className="summary-value">{formatUsd(summaryCashflow?.current_value)}</strong>
+            </article>
+          </section>
+        )}
+
+        <div className="table-wrap">
+          <table className="holdings-table readable-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th className="num">Trades</th>
+                <th className="num">Bought</th>
+                <th className="num">Sold</th>
+                <th className="num">Invested</th>
+                <th className="num">Sold (USD)</th>
+                <th className="num">Realized PnL</th>
+                <th className="num">PnL %</th>
+                <th className="num">Holding</th>
+                <th className="num">Avg Buy</th>
+                <th className="num">Avg Sell</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {items.map((item, index) => {
+                const counts = isTableRow(item.counts) ? item.counts : null
+                const quantity = isTableRow(item.quantity) ? item.quantity : null
+                const cashflowUsd = isTableRow(item.cashflow_usd) ? item.cashflow_usd : null
+                const pnl = isTableRow(item.pnl) ? item.pnl : null
+                const pricing = isTableRow(item.pricing) ? item.pricing : null
+                const realizedPnl = toNumber(pnl?.realized_profit_usd)
+                const pnlPercent = toNumber(pnl?.total_percent)
+
+                return (
+                  <tr key={index}>
+                    <td className="token-cell">
+                      <span className="token-symbol">{typeof item.symbol === 'string' ? item.symbol : 'Unknown'}</span>
+                      <span className="token-address" title={typeof item.address === 'string' ? item.address : ''}>
+                        {shortenAddress(item.address)}
+                      </span>
+                    </td>
+                    <td className="num">{formatCompactNumber(counts?.total_trade, 0)}</td>
+                    <td className="num">{formatCompactNumber(quantity?.total_bought_amount, 4)}</td>
+                    <td className="num">{formatCompactNumber(quantity?.total_sold_amount, 4)}</td>
+                    <td className="num">{formatUsd(cashflowUsd?.total_invested)}</td>
+                    <td className="num">{formatUsd(cashflowUsd?.total_sold)}</td>
+                    <td className={`num ${realizedPnl !== null && realizedPnl >= 0 ? 'pl-positive' : 'pl-negative'}`}>
+                      {formatUsd(realizedPnl)}
+                    </td>
+                    <td className={`num ${pnlPercent !== null && pnlPercent >= 0 ? 'pl-positive' : 'pl-negative'}`}>
+                      {formatPercent(pnlPercent)}
+                    </td>
+                    <td className="num">{formatCompactNumber(quantity?.holding, 6)}</td>
+                    <td className="num">{formatTokenPrice(pricing?.avg_buy_cost)}</td>
+                    <td className="num">{formatTokenPrice(pricing?.avg_sell_cost)}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>
     )
   }
 
