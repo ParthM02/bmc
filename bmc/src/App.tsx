@@ -55,6 +55,14 @@ const shortenAddress = (value: unknown): string => {
   return `${value.slice(0, 6)}...${value.slice(-6)}`
 }
 
+const SOL_MINT_ADDRESS = 'So11111111111111111111111111111111111111112'
+
+const isSolToken = (item: TableRow): boolean => {
+  const symbol = typeof item.symbol === 'string' ? item.symbol.toUpperCase() : ''
+  const address = typeof item.address === 'string' ? item.address : ''
+  return symbol === 'SOL' || address === SOL_MINT_ADDRESS
+}
+
 function App() {
   const [walletData, setWalletData] = useState<unknown>(null)
   const [loading, setLoading] = useState(true)
@@ -130,14 +138,31 @@ function App() {
     const summaryCounts = summary && isTableRow(summary.counts) ? summary.counts : null
     const summaryPnl = summary && isTableRow(summary.pnl) ? summary.pnl : null
     const summaryCashflow = summary && isTableRow(summary.cashflow_usd) ? summary.cashflow_usd : null
+    const memeCoinsHeld = items.filter((item) => !isSolToken(item)).length
+    const roiValues = items
+      .filter((item) => !isSolToken(item))
+      .map((item) => {
+        const pnl = isTableRow(item.pnl) ? item.pnl : null
+        return toNumber(pnl?.total_percent)
+      })
+      .filter((value): value is number => value !== null)
+    const averageRoi = roiValues.length > 0
+      ? roiValues.reduce((sum, value) => sum + value, 0) / roiValues.length
+      : null
 
     return (
       <>
         {summary && (
           <section className="summary-grid" aria-label="Wallet summary">
             <article className="summary-card">
-              <span className="summary-label">Unique Tokens</span>
-              <strong className="summary-value">{formatCompactNumber(summary.unique_tokens, 0)}</strong>
+              <span className="summary-label">Meme Coins Held</span>
+              <strong className="summary-value">{formatCompactNumber(memeCoinsHeld, 0)}</strong>
+            </article>
+            <article className="summary-card">
+              <span className="summary-label">Average ROI</span>
+              <strong className={`summary-value ${averageRoi !== null && averageRoi >= 0 ? 'pl-positive' : 'pl-negative'}`}>
+                {formatPercent(averageRoi)}
+              </strong>
             </article>
             <article className="summary-card">
               <span className="summary-label">Win Rate</span>
@@ -217,10 +242,6 @@ function App() {
 
   return (
     <main className="site">
-       <div className="warning-banner" role="alert" aria-live="polite">
-        <p>Wallet Data Viewer</p>
-      </div>
-
       <h1 className="site-header">Big Money Crypto - Wallet PnL</h1>
 
       {loading && <p className="status">Loading wallet data...</p>}
