@@ -185,6 +185,11 @@ function App() {
 
   return (
     <main className="site">
+      <div className="warning-banner" role="alert" aria-live="polite">
+        <p>Live Trading Active - Site Under Construction</p>
+        <p>Numbers Not Accurate</p>
+      </div>
+
       <h1 className="site-header">Big Money Crypto</h1>
 
       {loading && <p className="status">Loading holdings...</p>}
