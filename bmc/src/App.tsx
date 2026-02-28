@@ -63,6 +63,11 @@ const isSolToken = (item: TableRow): boolean => {
   return symbol === 'SOL' || address === SOL_MINT_ADDRESS
 }
 
+const isStableToken = (item: TableRow): boolean => {
+  const symbol = typeof item.symbol === 'string' ? item.symbol.toUpperCase() : ''
+  return symbol === 'USDC' || symbol === 'USDT'
+}
+
 function App() {
   const [walletData, setWalletData] = useState<unknown>(null)
   const [loading, setLoading] = useState(true)
@@ -140,7 +145,7 @@ function App() {
     const summaryCashflow = summary && isTableRow(summary.cashflow_usd) ? summary.cashflow_usd : null
     const memeCoinsHeld = items.filter((item) => !isSolToken(item)).length
     const roiValues = items
-      .filter((item) => !isSolToken(item))
+      .filter((item) => !isSolToken(item) && !isStableToken(item))
       .map((item) => {
         const pnl = isTableRow(item.pnl) ? item.pnl : null
         return toNumber(pnl?.total_percent)
