@@ -143,7 +143,7 @@ function App() {
     const summaryCounts = summary && isTableRow(summary.counts) ? summary.counts : null
     const summaryPnl = summary && isTableRow(summary.pnl) ? summary.pnl : null
     const summaryCashflow = summary && isTableRow(summary.cashflow_usd) ? summary.cashflow_usd : null
-    const memeCoinsHeld = items.filter((item) => !isSolToken(item)).length
+    const memeCoinsHeld = items.filter((item) => !isSolToken(item) && !isStableToken(item)).length
     const roiValues = items
       .filter((item) => !isSolToken(item) && !isStableToken(item))
       .map((item) => {
