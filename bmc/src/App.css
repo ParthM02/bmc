@@ -88,6 +88,49 @@
   gap: 0.65rem;
 }
 
+.auth-card {
+  max-width: 560px;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.auth-label {
+  color: #cfcfd4;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.auth-input {
+  border: 1px solid #2a2a2a;
+  background: #0d0d0d;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.92rem;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #5b5b5b;
+}
+
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.45rem;
+}
+
+.auth-actions .nav-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .warning-banner {
   align-self: stretch;
   width: 100%;
