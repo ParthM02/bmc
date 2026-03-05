@@ -62,15 +62,22 @@ export const LoginPage = ({ session, authLoading }: LoginPageProps) => {
         setError(signInError.message)
       }
     } else {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
       })
 
       if (signUpError) {
         setError(signUpError.message)
       } else {
-        setStatus('Account created. Check your inbox for verification if your project requires email confirmation.')
+        if (signUpData.session) {
+          setStatus('Account created and signed in. Email confirmation is currently optional in your Supabase settings.')
+        } else {
+          setStatus('Account created. Check your inbox and open the verification link to finish setup.')
+        }
       }
     }
 

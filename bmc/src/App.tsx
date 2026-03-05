@@ -57,7 +57,7 @@ function App() {
   return (
     <main className="site">
       <ConstructionBanner />
-      <TopNav />
+      <TopNav session={session} authLoading={authLoading} />
 
       <Routes>
         <Route path="/" element={<HomePage loading={loading} error={error} walletData={walletData} />} />
