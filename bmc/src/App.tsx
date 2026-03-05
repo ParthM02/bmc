@@ -62,7 +62,9 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage loading={loading} error={error} walletData={walletData} />} />
         <Route path="/auth" element={<LoginPage session={session} authLoading={authLoading} />} />
+        <Route path="/auth/*" element={<LoginPage session={session} authLoading={authLoading} />} />
         <Route path="/my-bot" element={<ProtectedMyBotRoute session={session} />} />
+        <Route path="/my-bot/*" element={<ProtectedMyBotRoute session={session} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>
