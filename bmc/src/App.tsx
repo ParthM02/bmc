@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? ''
@@ -95,7 +96,7 @@ function App() {
     fetchWalletData()
   }, [])
 
-  const renderContent = () => {
+  const renderHomeContent = () => {
     if (!walletData) return null
 
     // Determine if data is a list or object with list
@@ -319,12 +320,61 @@ function App() {
 
   return (
     <main className="site">
-      <h1 className="site-header">Big Money Crypto - Fund PnL</h1>
+      <section className="warning-banner" role="status" aria-live="polite">
+        <p>🚧 Under Construction: Big Money Crypto is actively being upgraded.</p>
+        <p>Some features may be temporarily offline while we roll out improvements.</p>
+      </section>
 
-      {loading && <p className="status">Loading wallet data...</p>}
-      {error && <p className="status error">{error}</p>}
-      
-      {!loading && !error && renderContent()}
+      <header className="top-nav" aria-label="Primary navigation">
+        <h1 className="site-header">Big Money Crypto</h1>
+
+        <nav className="nav-links" aria-label="Pages">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/my-bot"
+            className={({ isActive }) => `nav-btn ${isActive ? 'active' : ''}`}
+          >
+            My Bot
+          </NavLink>
+        </nav>
+
+        <button type="button" className="profile-btn" aria-label="Open profile">
+          👤
+        </button>
+      </header>
+
+      <Routes>
+        <Route
+          path="/"
+          element={(
+            <>
+              <h2 className="page-title">Home</h2>
+              <p className="status">This dashboard is currently serving as the Home placeholder.</p>
+
+              {loading && <p className="status">Loading wallet data...</p>}
+              {error && <p className="status error">{error}</p>}
+
+              {!loading && !error && renderHomeContent()}
+            </>
+          )}
+        />
+        <Route
+          path="/my-bot"
+          element={(
+            <section className="placeholder-card" aria-label="My Bot placeholder">
+              <h2 className="page-title">My Bot</h2>
+              <p className="status">This page is intentionally blank for now.</p>
+            </section>
+          )}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </main>
   )
 }
