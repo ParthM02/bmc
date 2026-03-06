@@ -16,12 +16,6 @@ const toSolNumber = (value: number | string | null) => {
   return Number.isNaN(numeric) ? 0 : numeric
 }
 
-const formatSol = (value: number | string | null) => {
-  const numeric = toSolNumber(value)
-
-  return `${numeric.toFixed(2)} SOL`
-}
-
 const sanitizeMode = (value: string | null | undefined): BotMode => {
   if (value === 'aggressive' || value === 'balanced' || value === 'chill') {
     return value
@@ -205,104 +199,100 @@ export const MyBotPage = () => {
             void onApply()
           }}
         >
-          <div className="form-grid">
-            <label className="field-group" htmlFor="tiktok-amount">
-              <span className="summary-label">TikTok Investment Amount</span>
-              <span className="amount-input-wrap">
-                <input
-                  id="tiktok-amount"
-                  className="auth-input"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={form.tiktokAmount}
-                  onChange={(event) => {
-                    setForm((prev) => (prev ? { ...prev, tiktokAmount: event.target.value } : prev))
-                  }}
-                />
-                <span className="amount-suffix">SOL</span>
-              </span>
-            </label>
+          <div className="table-wrap settings-table-wrap">
+            <table className="bot-settings-table">
+              <thead>
+                <tr>
+                  <th scope="col">TikTok Amount (SOL)</th>
+                  <th scope="col">Twitter Amount (SOL)</th>
+                  <th scope="col">Aggressiveness</th>
+                  <th scope="col">Bot</th>
+                  <th scope="col">Public Wallet</th>
+                  <th scope="col">Apply</th>
+                </tr>
+              </thead>
 
-            <label className="field-group" htmlFor="twitter-amount">
-              <span className="summary-label">Twitter Investment Amount</span>
-              <span className="amount-input-wrap">
-                <input
-                  id="twitter-amount"
-                  className="auth-input"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={form.twitterAmount}
-                  onChange={(event) => {
-                    setForm((prev) => (prev ? { ...prev, twitterAmount: event.target.value } : prev))
-                  }}
-                />
-                <span className="amount-suffix">SOL</span>
-              </span>
-            </label>
+              <tbody>
+                <tr>
+                  <td>
+                    <input
+                      id="tiktok-amount"
+                      className="auth-input compact-input no-spin"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      value={form.tiktokAmount}
+                      onChange={(event) => {
+                        setForm((prev) => (prev ? { ...prev, tiktokAmount: event.target.value } : prev))
+                      }}
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      id="twitter-amount"
+                      className="auth-input compact-input no-spin"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      value={form.twitterAmount}
+                      onChange={(event) => {
+                        setForm((prev) => (prev ? { ...prev, twitterAmount: event.target.value } : prev))
+                      }}
+                    />
+                  </td>
+
+                  <td>
+                    <div className="mode-switch-group compact" role="radiogroup" aria-label="Bot aggressiveness">
+                      {BOT_MODES.map((mode) => (
+                        <button
+                          key={mode.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={form.aggressiveness === mode.value}
+                          className={`mode-option compact ${form.aggressiveness === mode.value ? 'active' : ''}`}
+                          onClick={() => {
+                            setForm((prev) => (prev ? { ...prev, aggressiveness: mode.value } : prev))
+                          }}
+                        >
+                          {mode.label}
+                        </button>
+                      ))}
+                    </div>
+                  </td>
+
+                  <td>
+                    <label className="toggle-switch" htmlFor="bot-on-switch" aria-label="Bot status">
+                      <input
+                        id="bot-on-switch"
+                        type="checkbox"
+                        checked={form.botOn}
+                        onChange={(event) => {
+                          setForm((prev) => (prev ? { ...prev, botOn: event.target.checked } : prev))
+                        }}
+                      />
+                      <span className="toggle-slider" aria-hidden="true" />
+                    </label>
+                  </td>
+
+                  <td>
+                    <span className="mono-value">{settings.public_wallet_key || 'Not set'}</span>
+                  </td>
+
+                  <td>
+                    <button className="nav-btn" type="submit" disabled={!hasChanges || saving}>
+                      {saving ? 'Applying...' : 'Apply'}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          <div className="field-group">
-            <span className="summary-label">Bot Aggressiveness</span>
-            <div className="mode-switch-group" role="radiogroup" aria-label="Bot aggressiveness">
-              {BOT_MODES.map((mode) => (
-                <button
-                  key={mode.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={form.aggressiveness === mode.value}
-                  className={`mode-option ${form.aggressiveness === mode.value ? 'active' : ''}`}
-                  onClick={() => {
-                    setForm((prev) => (prev ? { ...prev, aggressiveness: mode.value } : prev))
-                  }}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="toggle-row">
-            <div>
-              <span className="summary-label">Bot Status</span>
-              <p className="status">{form.botOn ? 'Bot is On' : 'Bot is Off'}</p>
-            </div>
-
-            <label className="toggle-switch" htmlFor="bot-on-switch">
-              <input
-                id="bot-on-switch"
-                type="checkbox"
-                checked={form.botOn}
-                onChange={(event) => {
-                  setForm((prev) => (prev ? { ...prev, botOn: event.target.checked } : prev))
-                }}
-              />
-              <span className="toggle-slider" aria-hidden="true" />
-            </label>
-          </div>
-
-          <article className="summary-card">
-            <span className="summary-label">Current Public Wallet Key</span>
-            <span className="summary-value mono-value">{settings.public_wallet_key || 'Not set'}</span>
-          </article>
-
-          <article className="summary-card">
-            <span className="summary-label">Preview</span>
-            <span className="summary-value">TikTok: {formatSol(form.tiktokAmount)}</span>
-            <span className="summary-value">Twitter: {formatSol(form.twitterAmount)}</span>
-          </article>
 
           {saveError && <p className="status error">{saveError}</p>}
           {saveMessage && <p className="status">{saveMessage}</p>}
-
-          <div className="form-actions">
-            <button className="nav-btn" type="submit" disabled={!hasChanges || saving}>
-              {saving ? 'Applying...' : 'Apply'}
-            </button>
-          </div>
         </form>
       )}
     </section>

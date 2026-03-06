@@ -267,6 +267,52 @@
   gap: 0.85rem;
 }
 
+.settings-table-wrap {
+  overflow-x: auto;
+}
+
+.bot-settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+  font-size: 0.9rem;
+  min-width: 980px;
+}
+
+.bot-settings-table th,
+.bot-settings-table td {
+  text-align: left;
+  padding: 0.65rem 0.6rem;
+  border-bottom: 1px solid #1f1f1f;
+  vertical-align: middle;
+}
+
+.bot-settings-table th {
+  background: #111;
+  color: #a1a1aa;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.compact-input {
+  width: 120px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.88rem;
+}
+
+.no-spin::-webkit-outer-spin-button,
+.no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spin[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
 .form-grid {
   width: 100%;
   display: grid;
@@ -305,6 +351,11 @@
   gap: 0.45rem;
 }
 
+.mode-switch-group.compact {
+  flex-wrap: nowrap;
+  gap: 0.3rem;
+}
+
 .mode-option {
   border: 1px solid #2a2a2a;
   background: #0d0d0d;
@@ -315,6 +366,11 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
+}
+
+.mode-option.compact {
+  padding: 0.36rem 0.65rem;
+  font-size: 0.8rem;
 }
 
 .mode-option:hover {
