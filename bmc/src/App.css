@@ -253,6 +253,13 @@
   font-weight: 700;
 }
 
+.mono-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
 .table-wrap {
   width: 100%;
   max-width: 100%;
