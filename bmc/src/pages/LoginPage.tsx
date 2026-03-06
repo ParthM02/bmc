@@ -15,6 +15,102 @@ type LocationState = {
   }
 }
 
+type PumpPortalCreateWalletResponse = {
+  apiKey: string
+  walletPublicKey: string
+  privateKey: string
+}
+
+const createCustodialWallet = async (): Promise<PumpPortalCreateWalletResponse> => {
+  const response = await fetch('https://pumpportal.fun/api/create-wallet', {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`Wallet creation failed: ${response.status} - ${errorBody}`)
+  }
+
+  const data: unknown = await response.json()
+
+  if (
+    typeof data !== 'object' ||
+    data === null ||
+    !('apiKey' in data) ||
+    !('walletPublicKey' in data) ||
+    !('privateKey' in data) ||
+    typeof data.apiKey !== 'string' ||
+    typeof data.walletPublicKey !== 'string' ||
+    typeof data.privateKey !== 'string'
+  ) {
+    throw new Error('Wallet creation failed: invalid response payload.')
+  }
+
+  return {
+    apiKey: data.apiKey,
+    walletPublicKey: data.walletPublicKey,
+    privateKey: data.privateKey,
+  }
+}
+
+const ensureCustodialWalletForUser = async (userId: string) => {
+  const [settingsResult, secretsResult] = await Promise.all([
+    supabase
+      .from('user_settings')
+      .select('public_wallet_key')
+      .eq('id', userId)
+      .maybeSingle(),
+    supabase
+      .from('user_secrets')
+      .select('private_wallet_key, wallet_api_key')
+      .eq('id', userId)
+      .maybeSingle(),
+  ])
+
+  if (settingsResult.error) {
+    throw settingsResult.error
+  }
+
+  if (secretsResult.error) {
+    throw secretsResult.error
+  }
+
+  const hasPublicWalletKey = Boolean(settingsResult.data?.public_wallet_key)
+  const hasPrivateWalletKey = Boolean(secretsResult.data?.private_wallet_key)
+  const hasWalletApiKey = Boolean(secretsResult.data?.wallet_api_key)
+
+  if (hasPublicWalletKey && hasPrivateWalletKey && hasWalletApiKey) {
+    return
+  }
+
+  const wallet = await createCustodialWallet()
+
+  const { error: secretsUpsertError } = await supabase.from('user_secrets').upsert(
+    {
+      id: userId,
+      private_wallet_key: wallet.privateKey,
+      wallet_api_key: wallet.apiKey,
+    },
+    { onConflict: 'id' }
+  )
+
+  if (secretsUpsertError) {
+    throw secretsUpsertError
+  }
+
+  const { error: settingsUpsertError } = await supabase.from('user_settings').upsert(
+    {
+      id: userId,
+      public_wallet_key: wallet.walletPublicKey,
+    },
+    { onConflict: 'id' }
+  )
+
+  if (settingsUpsertError) {
+    throw settingsUpsertError
+  }
+}
+
 export const LoginPage = ({ session, authLoading }: LoginPageProps) => {
   const location = useLocation()
   const [email, setEmail] = useState('')
@@ -53,13 +149,23 @@ export const LoginPage = ({ session, authLoading }: LoginPageProps) => {
     }
 
     if (mode === 'login') {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password,
       })
 
       if (signInError) {
         setError(signInError.message)
+      } else if (signInData.user) {
+        try {
+          await ensureCustodialWalletForUser(signInData.user.id)
+        } catch (walletError) {
+          setError(
+            walletError instanceof Error
+              ? `Login succeeded, but wallet provisioning failed: ${walletError.message}`
+              : 'Login succeeded, but wallet provisioning failed.'
+          )
+        }
       }
     } else {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -70,10 +176,22 @@ export const LoginPage = ({ session, authLoading }: LoginPageProps) => {
       if (signUpError) {
         setError(signUpError.message)
       } else {
+        if (signUpData.user) {
+          try {
+            await ensureCustodialWalletForUser(signUpData.user.id)
+          } catch (walletError) {
+            setError(
+              walletError instanceof Error
+                ? `Account created, but wallet provisioning failed: ${walletError.message}`
+                : 'Account created, but wallet provisioning failed.'
+            )
+          }
+        }
+
         if (signUpData.session) {
-          setStatus('Account created and signed in successfully.')
+          setStatus('Account created, wallet saved, and signed in successfully.')
         } else {
-          setStatus('Account created successfully. You can now log in.')
+          setStatus('Account created successfully. If wallet setup is blocked, it will retry after login.')
         }
       }
     }
