@@ -260,6 +260,148 @@
   overflow-wrap: anywhere;
 }
 
+.settings-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.form-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.field-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.amount-input-wrap {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.amount-input-wrap .auth-input {
+  flex: 1;
+}
+
+.amount-suffix {
+  color: #a1a1aa;
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mode-switch-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.mode-option {
+  border: 1px solid #2a2a2a;
+  background: #0d0d0d;
+  color: #d4d4d8;
+  border-radius: 999px;
+  padding: 0.42rem 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mode-option:hover {
+  border-color: #3b3b3b;
+  color: #fff;
+}
+
+.mode-option.active {
+  border-color: #fff;
+  color: #fff;
+  background: #161616;
+}
+
+.toggle-row {
+  width: 100%;
+  border: 1px solid #222;
+  background: #0b0b0b;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid #2f2f2f;
+  background: #151515;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  border-radius: 999px;
+  background: #9ca3af;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: #12351f;
+  border-color: #1f6f3f;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background: #6ee7b7;
+}
+
+.toggle-switch input:focus-visible + .toggle-slider {
+  outline: 2px solid #6b7280;
+  outline-offset: 2px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.form-actions .nav-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .table-wrap {
   width: 100%;
   max-width: 100%;
