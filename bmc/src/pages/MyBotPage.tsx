@@ -37,6 +37,11 @@ type FormState = {
   botOn: boolean
 }
 
+type CopyToast = {
+  kind: 'success' | 'error' | 'info'
+  message: string
+}
+
 const toFormState = (settings: UserSettingsRow): FormState => ({
   tiktokAmount: toSolNumber(settings.tiktok_investment_amount).toString(),
   twitterAmount: toSolNumber(settings.twitter_investment_amount).toString(),
@@ -53,7 +58,21 @@ export const MyBotPage = () => {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
-  const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [copyToast, setCopyToast] = useState<CopyToast | null>(null)
+
+  useEffect(() => {
+    if (!copyToast) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setCopyToast(null)
+    }, 2600)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [copyToast])
 
   useEffect(() => {
     let mounted = true
@@ -195,7 +214,7 @@ export const MyBotPage = () => {
     const wallet = settings?.public_wallet_key?.trim()
 
     if (!wallet) {
-      setCopyMessage('Wallet address is not set.')
+      setCopyToast({ kind: 'info', message: 'Wallet address is not set.' })
       return
     }
 
@@ -214,14 +233,20 @@ export const MyBotPage = () => {
         document.body.removeChild(textArea)
       }
 
-      setCopyMessage('Wallet address copied.')
+      setCopyToast({ kind: 'success', message: 'Wallet address copied.' })
     } catch {
-      setCopyMessage('Failed to copy wallet address.')
+      setCopyToast({ kind: 'error', message: 'Failed to copy wallet address.' })
     }
   }
 
   return (
     <section className="placeholder-card" aria-label="My Bot settings">
+      {copyToast && (
+        <div className={`copy-toast ${copyToast.kind}`} role="status" aria-live="polite">
+          {copyToast.message}
+        </div>
+      )}
+
       <h2 className="page-title">My Bot</h2>
 
       {loading && <p className="status">Loading your bot settings...</p>}
@@ -254,8 +279,6 @@ export const MyBotPage = () => {
               Copy
             </button>
           </div>
-
-          {copyMessage && <p className="status">{copyMessage}</p>}
 
           <div className="table-wrap settings-table-wrap">
             <table className="bot-settings-table">

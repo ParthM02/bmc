@@ -272,7 +272,8 @@
 }
 
 .wallet-copy-row {
-  width: 100%;
+  width: min(100%, 760px);
+  align-self: flex-start;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -286,6 +287,48 @@
 .wallet-copy-text {
   margin: 0;
   color: #ddd;
+}
+
+.wallet-copy-row .nav-btn {
+  flex-shrink: 0;
+}
+
+.copy-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+  max-width: min(420px, calc(100vw - 2rem));
+  border: 1px solid #2a2a2a;
+  border-left: 4px solid #6b7280;
+  border-radius: 10px;
+  background: #101012;
+  color: #f4f4f5;
+  padding: 0.7rem 0.9rem;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.copy-toast.success {
+  border-color: rgba(52, 211, 153, 0.4);
+  border-left-color: #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.05));
+  color: #d1fae5;
+}
+
+.copy-toast.error {
+  border-color: rgba(248, 113, 113, 0.45);
+  border-left-color: #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+  color: #fee2e2;
+}
+
+.copy-toast.info {
+  border-color: rgba(96, 165, 250, 0.45);
+  border-left-color: #3b82f6;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0.05));
+  color: #dbeafe;
 }
 
 .bot-settings-table {
