@@ -88,6 +88,16 @@ export const extractWalletItems = (walletData: unknown): TableRow[] | null => {
     return walletDataTokens
   }
 
+  // Some API responses include summary/meta but no token rows yet.
+  // Treat these as a valid empty dataset so UI can still render the styled table shell.
+  if (
+    isTableRow(walletDataData) &&
+    (Object.prototype.hasOwnProperty.call(walletDataData, 'summary') ||
+      Object.prototype.hasOwnProperty.call(walletDataData, 'meta'))
+  ) {
+    return []
+  }
+
   return null
 }
 

@@ -19,26 +19,23 @@ type HomeContentProps = {
 
 export const HomeContent = ({ walletData }: HomeContentProps) => {
   const items = extractWalletItems(walletData)
+  const summary = extractWalletSummary(walletData)
 
-  if (!items) {
+  if (!items && !summary) {
     return (
-      <div className="table-wrap">
-        <h3>Raw Data</h3>
-        <pre>{JSON.stringify(walletData, null, 2)}</pre>
-      </div>
+      <section className="table-wrap raw-data-panel" aria-label="Wallet raw data">
+        <h3 className="section-title">Raw Data</h3>
+        <pre className="raw-data-pre">{JSON.stringify(walletData, null, 2)}</pre>
+      </section>
     )
   }
 
-  if (items.length === 0) {
-    return <p>No items found.</p>
-  }
-
-  const summary = extractWalletSummary(walletData)
+  const safeItems = items ?? []
   const summaryCounts = summary && isTableRow(summary.counts) ? summary.counts : null
   const summaryPnl = summary && isTableRow(summary.pnl) ? summary.pnl : null
   const summaryCashflow = summary && isTableRow(summary.cashflow_usd) ? summary.cashflow_usd : null
-  const memeCoinsHeld = items.filter((item) => !isSolToken(item) && !isStableToken(item)).length
-  const roiValues = items
+  const memeCoinsHeld = safeItems.filter((item) => !isSolToken(item) && !isStableToken(item)).length
+  const roiValues = safeItems
     .filter((item) => !isSolToken(item) && !isStableToken(item))
     .map((item) => {
       const pnl = isTableRow(item.pnl) ? item.pnl : null
@@ -99,7 +96,15 @@ export const HomeContent = ({ walletData }: HomeContentProps) => {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => {
+            {safeItems.length === 0 && (
+              <tr>
+                <td className="empty-state-cell" colSpan={11}>
+                  No token holdings found for this wallet yet.
+                </td>
+              </tr>
+            )}
+
+            {safeItems.map((item, index) => {
               const counts = isTableRow(item.counts) ? item.counts : null
               const quantity = isTableRow(item.quantity) ? item.quantity : null
               const cashflowUsd = isTableRow(item.cashflow_usd) ? item.cashflow_usd : null

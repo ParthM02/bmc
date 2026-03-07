@@ -602,6 +602,30 @@
   background: #0d0d0d;
 }
 
+.holdings-table .empty-state-cell {
+  text-align: center;
+  color: #a1a1aa;
+  padding: 1rem 0.75rem;
+}
+
+.raw-data-panel {
+  padding: 0.9rem;
+  background: #0b0b0b;
+}
+
+.raw-data-pre {
+  margin: 0;
+  padding: 0.85rem;
+  border: 1px solid #1f1f1f;
+  border-radius: 8px;
+  background: #090909;
+  color: #d4d4d8;
+  max-height: 420px;
+  overflow: auto;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .readable-table td,
 .readable-table th {
   vertical-align: middle;
