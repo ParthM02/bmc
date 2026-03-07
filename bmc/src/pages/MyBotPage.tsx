@@ -91,21 +91,29 @@ export const MyBotPage = () => {
           throw settingsError
         }
 
-        if (mounted) {
-          if (data) {
+        if (data) {
+          if (mounted) {
             setSettings(data)
             setForm(toFormState(data))
-          } else {
-            const defaultSettings: UserSettingsRow = {
-              tiktok_investment_amount: 0,
-              twitter_investment_amount: 0,
-              aggressiveness: 'balanced',
-              public_wallet_key: null,
-              bot_on: false,
-            }
-            setSettings(defaultSettings)
-            setForm(toFormState(defaultSettings))
           }
+          return
+        }
+
+        const { data: initializedData, error: initializeError } = await supabase
+          .from('user_settings')
+          .upsert({ id: user.id }, { onConflict: 'id' })
+          .select(
+            'tiktok_investment_amount, twitter_investment_amount, aggressiveness, public_wallet_key, bot_on'
+          )
+          .single()
+
+        if (initializeError) {
+          throw initializeError
+        }
+
+        if (mounted) {
+          setSettings(initializedData)
+          setForm(toFormState(initializedData))
         }
       } catch (err) {
         if (mounted) {
