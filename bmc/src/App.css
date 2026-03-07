@@ -271,12 +271,29 @@
   overflow-x: auto;
 }
 
+.wallet-copy-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid #222;
+  border-radius: 10px;
+  background: #0b0b0b;
+  padding: 0.75rem 0.9rem;
+}
+
+.wallet-copy-text {
+  margin: 0;
+  color: #ddd;
+}
+
 .bot-settings-table {
   width: 100%;
   border-collapse: collapse;
   color: #fff;
   font-size: 0.9rem;
-  min-width: 980px;
+  min-width: 860px;
 }
 
 .bot-settings-table th,

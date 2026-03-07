@@ -53,6 +53,7 @@ export const MyBotPage = () => {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
+  const [copyMessage, setCopyMessage] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -190,6 +191,35 @@ export const MyBotPage = () => {
     }
   }
 
+  const onCopyWallet = async () => {
+    const wallet = settings?.public_wallet_key?.trim()
+
+    if (!wallet) {
+      setCopyMessage('Wallet address is not set.')
+      return
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(wallet)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = wallet
+        textArea.setAttribute('readonly', '')
+        textArea.style.position = 'absolute'
+        textArea.style.left = '-9999px'
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+      }
+
+      setCopyMessage('Wallet address copied.')
+    } catch {
+      setCopyMessage('Failed to copy wallet address.')
+    }
+  }
+
   return (
     <section className="placeholder-card" aria-label="My Bot settings">
       <h2 className="page-title">My Bot</h2>
@@ -207,6 +237,26 @@ export const MyBotPage = () => {
             void onApply()
           }}
         >
+          <div className="wallet-copy-row">
+            <p className="status wallet-copy-text">
+              Send your Solana to this wallet address:{' '}
+              <strong className="mono-value">{settings.public_wallet_key || 'Not set'}</strong>
+            </p>
+
+            <button
+              className="nav-btn"
+              type="button"
+              onClick={() => {
+                void onCopyWallet()
+              }}
+              disabled={!settings.public_wallet_key}
+            >
+              Copy
+            </button>
+          </div>
+
+          {copyMessage && <p className="status">{copyMessage}</p>}
+
           <div className="table-wrap settings-table-wrap">
             <table className="bot-settings-table">
               <thead>
@@ -215,7 +265,6 @@ export const MyBotPage = () => {
                   <th scope="col">Twitter Amount (SOL)</th>
                   <th scope="col">Aggressiveness</th>
                   <th scope="col">Bot</th>
-                  <th scope="col">Public Wallet</th>
                   <th scope="col">Apply</th>
                 </tr>
               </thead>
@@ -283,10 +332,6 @@ export const MyBotPage = () => {
                       />
                       <span className="toggle-slider" aria-hidden="true" />
                     </label>
-                  </td>
-
-                  <td>
-                    <span className="mono-value">{settings.public_wallet_key || 'Not set'}</span>
                   </td>
 
                   <td>
