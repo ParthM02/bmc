@@ -302,7 +302,7 @@
   border: 1px solid #2a2a2a;
   border-left: 4px solid #6b7280;
   border-radius: 10px;
-  background: #101012;
+  background: #111214;
   color: #f4f4f5;
   padding: 0.7rem 0.9rem;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
@@ -311,23 +311,23 @@
 }
 
 .copy-toast.success {
-  border-color: rgba(52, 211, 153, 0.4);
+  border-color: #1f6f56;
   border-left-color: #10b981;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0.05));
+  background: #0f2b22;
   color: #d1fae5;
 }
 
 .copy-toast.error {
-  border-color: rgba(248, 113, 113, 0.45);
+  border-color: #7f1d1d;
   border-left-color: #ef4444;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+  background: #2f1212;
   color: #fee2e2;
 }
 
 .copy-toast.info {
-  border-color: rgba(96, 165, 250, 0.45);
+  border-color: #1e3a8a;
   border-left-color: #3b82f6;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(59, 130, 246, 0.05));
+  background: #10223f;
   color: #dbeafe;
 }
 
