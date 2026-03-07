@@ -131,6 +131,15 @@ export const LoginPage = ({ session, authLoading }: LoginPageProps) => {
     )
   }
 
+  if (session && pending) {
+    return (
+      <section className="placeholder-card auth-card" aria-label="Finalizing account setup">
+        <h2 className="page-title">Account Access</h2>
+        <p className="status">Finalizing wallet setup...</p>
+      </section>
+    )
+  }
+
   if (session) {
     return <Navigate to={targetPath} replace />
   }
