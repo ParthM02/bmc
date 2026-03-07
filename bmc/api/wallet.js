@@ -6,10 +6,15 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.BIRDEYE_API_KEY
   const apiKeyTwo = process.env.BIRDEYE_API_KEY_2
-  const walletAddress = process.env.WALLET_ADDRESS
+  const walletFromQuery = Array.isArray(req.query?.wallet)
+    ? req.query.wallet[0]
+    : req.query?.wallet
+  const walletAddress = typeof walletFromQuery === 'string' && walletFromQuery.trim()
+    ? walletFromQuery.trim()
+    : process.env.WALLET_ADDRESS
 
   if ((!apiKey && !apiKeyTwo) || !walletAddress) {
-    console.error('Missing BirdEye API key(s) or WALLET_ADDRESS')
+    console.error('Missing BirdEye API key(s) or wallet address')
     res.status(500).json({ error: 'Server configuration error' })
     return
   }

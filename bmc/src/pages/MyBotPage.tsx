@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { HomeContent } from '../components/HomeContent'
+import { useWalletData } from '../hooks/useWalletData'
 import { supabase } from '../supabaseClient'
 
 type BotMode = 'aggressive' | 'balanced' | 'chill'
@@ -59,6 +61,12 @@ export const MyBotPage = () => {
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [copyToast, setCopyToast] = useState<CopyToast | null>(null)
+  const userWalletAddress = settings?.public_wallet_key?.trim() ?? null
+  const {
+    walletData,
+    loading: walletDashboardLoading,
+    error: walletDashboardError,
+  } = useWalletData(userWalletAddress, true)
 
   useEffect(() => {
     if (!copyToast) {
@@ -262,122 +270,144 @@ export const MyBotPage = () => {
       {!loading && error && <p className="status error">{error}</p>}
 
       {!loading && !error && settings && form && (
-        <form
-          className="settings-form"
-          aria-label="Edit bot settings"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void onApply()
-          }}
-        >
-          <div className="wallet-copy-row">
-            <p className="status wallet-copy-text">
-              Send your Solana to this wallet address:{' '}
-              <strong className="mono-value">{settings.public_wallet_key || 'Not set'}</strong>
-            </p>
+        <>
+          <form
+            className="settings-form"
+            aria-label="Edit bot settings"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void onApply()
+            }}
+          >
+            <div className="wallet-copy-row">
+              <p className="status wallet-copy-text">
+                Send your Solana to this wallet address:{' '}
+                <strong className="mono-value">{settings.public_wallet_key || 'Not set'}</strong>
+              </p>
 
-            <button
-              className="nav-btn"
-              type="button"
-              onClick={() => {
-                void onCopyWallet()
-              }}
-              disabled={!settings.public_wallet_key}
-            >
-              Copy
-            </button>
-          </div>
+              <button
+                className="nav-btn"
+                type="button"
+                onClick={() => {
+                  void onCopyWallet()
+                }}
+                disabled={!settings.public_wallet_key}
+              >
+                Copy
+              </button>
+            </div>
 
-          <div className="table-wrap settings-table-wrap">
-            <table className="bot-settings-table">
-              <thead>
-                <tr>
-                  <th scope="col">TikTok Amount (SOL)</th>
-                  <th scope="col">Twitter Amount (SOL)</th>
-                  <th scope="col">Aggressiveness</th>
-                  <th scope="col">Bot</th>
-                  <th scope="col">Apply</th>
-                </tr>
-              </thead>
+            <div className="table-wrap settings-table-wrap">
+              <table className="bot-settings-table">
+                <thead>
+                  <tr>
+                    <th scope="col">TikTok Amount (SOL)</th>
+                    <th scope="col">Twitter Amount (SOL)</th>
+                    <th scope="col">Aggressiveness</th>
+                    <th scope="col">Bot</th>
+                    <th scope="col">Apply</th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                <tr>
-                  <td>
-                    <input
-                      id="tiktok-amount"
-                      className="auth-input compact-input no-spin"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      inputMode="decimal"
-                      value={form.tiktokAmount}
-                      onChange={(event) => {
-                        setForm((prev) => (prev ? { ...prev, tiktokAmount: event.target.value } : prev))
-                      }}
-                    />
-                  </td>
-
-                  <td>
-                    <input
-                      id="twitter-amount"
-                      className="auth-input compact-input no-spin"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      inputMode="decimal"
-                      value={form.twitterAmount}
-                      onChange={(event) => {
-                        setForm((prev) => (prev ? { ...prev, twitterAmount: event.target.value } : prev))
-                      }}
-                    />
-                  </td>
-
-                  <td>
-                    <div className="mode-switch-group compact" role="radiogroup" aria-label="Bot aggressiveness">
-                      {BOT_MODES.map((mode) => (
-                        <button
-                          key={mode.value}
-                          type="button"
-                          role="radio"
-                          aria-checked={form.aggressiveness === mode.value}
-                          className={`mode-option compact ${form.aggressiveness === mode.value ? 'active' : ''}`}
-                          onClick={() => {
-                            setForm((prev) => (prev ? { ...prev, aggressiveness: mode.value } : prev))
-                          }}
-                        >
-                          {mode.label}
-                        </button>
-                      ))}
-                    </div>
-                  </td>
-
-                  <td>
-                    <label className="toggle-switch" htmlFor="bot-on-switch" aria-label="Bot status">
+                <tbody>
+                  <tr>
+                    <td>
                       <input
-                        id="bot-on-switch"
-                        type="checkbox"
-                        checked={form.botOn}
+                        id="tiktok-amount"
+                        className="auth-input compact-input no-spin"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputMode="decimal"
+                        value={form.tiktokAmount}
                         onChange={(event) => {
-                          setForm((prev) => (prev ? { ...prev, botOn: event.target.checked } : prev))
+                          setForm((prev) => (prev ? { ...prev, tiktokAmount: event.target.value } : prev))
                         }}
                       />
-                      <span className="toggle-slider" aria-hidden="true" />
-                    </label>
-                  </td>
+                    </td>
 
-                  <td>
-                    <button className="nav-btn" type="submit" disabled={!hasChanges || saving}>
-                      {saving ? 'Applying...' : 'Apply'}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <td>
+                      <input
+                        id="twitter-amount"
+                        className="auth-input compact-input no-spin"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputMode="decimal"
+                        value={form.twitterAmount}
+                        onChange={(event) => {
+                          setForm((prev) => (prev ? { ...prev, twitterAmount: event.target.value } : prev))
+                        }}
+                      />
+                    </td>
 
-          {saveError && <p className="status error">{saveError}</p>}
-          {saveMessage && <p className="status">{saveMessage}</p>}
-        </form>
+                    <td>
+                      <div className="mode-switch-group compact" role="radiogroup" aria-label="Bot aggressiveness">
+                        {BOT_MODES.map((mode) => (
+                          <button
+                            key={mode.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={form.aggressiveness === mode.value}
+                            className={`mode-option compact ${form.aggressiveness === mode.value ? 'active' : ''}`}
+                            onClick={() => {
+                              setForm((prev) => (prev ? { ...prev, aggressiveness: mode.value } : prev))
+                            }}
+                          >
+                            {mode.label}
+                          </button>
+                        ))}
+                      </div>
+                    </td>
+
+                    <td>
+                      <label className="toggle-switch" htmlFor="bot-on-switch" aria-label="Bot status">
+                        <input
+                          id="bot-on-switch"
+                          type="checkbox"
+                          checked={form.botOn}
+                          onChange={(event) => {
+                            setForm((prev) => (prev ? { ...prev, botOn: event.target.checked } : prev))
+                          }}
+                        />
+                        <span className="toggle-slider" aria-hidden="true" />
+                      </label>
+                    </td>
+
+                    <td>
+                      <button className="nav-btn" type="submit" disabled={!hasChanges || saving}>
+                        {saving ? 'Applying...' : 'Apply'}
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {saveError && <p className="status error">{saveError}</p>}
+            {saveMessage && <p className="status">{saveMessage}</p>}
+          </form>
+
+          <section className="settings-form" aria-label="Wallet dashboard">
+            <h3 className="section-title">Wallet Dashboard</h3>
+
+            {!settings.public_wallet_key && (
+              <p className="status">Wallet address is not set for this account yet.</p>
+            )}
+
+            {settings.public_wallet_key && walletDashboardLoading && (
+              <p className="status">Loading wallet data...</p>
+            )}
+
+            {settings.public_wallet_key && walletDashboardError && (
+              <p className="status error">{walletDashboardError}</p>
+            )}
+
+            {settings.public_wallet_key && !walletDashboardLoading && !walletDashboardError && walletData !== null && (
+              <HomeContent walletData={walletData} />
+            )}
+          </section>
+        </>
       )}
     </section>
   )
