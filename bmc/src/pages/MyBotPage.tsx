@@ -249,6 +249,14 @@ export const MyBotPage = () => {
 
       <h2 className="page-title">My Bot</h2>
 
+      <section className="warning-banner" role="note" aria-live="polite">
+        <p>⚠️ Security Reminder: Save your wallet keys externally as soon as possible.</p>
+        <p>
+          It is highly recommended that you use an additional wallet tracking app (for example, Phantom)
+          as a backup view for your wallet activity. You can find your important keys in your profile.
+        </p>
+      </section>
+
       {loading && <p className="status">Loading your bot settings...</p>}
 
       {!loading && error && <p className="status error">{error}</p>}
